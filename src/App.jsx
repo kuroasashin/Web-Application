@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+
 
 const Dashboard = () => {
   // State management
@@ -279,4 +282,5 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Dashboard />);
