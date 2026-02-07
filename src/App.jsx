@@ -1,90 +1,43 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-
-
+import React, { useState } from 'react';
 
 const Dashboard = () => {
-  // State management
-  const [tabs, setTabs] = useState([]);
-  const [activeTab, setActiveTab] = useState(null);
-  const [isAddingTab, setIsAddingTab] = useState(false);
-  const [newTabTitle, setNewTabTitle] = useState('');
-  const [stats, setStats] = useState([
-    { name: "Total Users", value: "1,234", change: "+12% from last month", icon: "👥" },
-    { name: "Revenue", value: "$5,678", change: "+8% from last month", icon: "💰" },
-    { name: "Tasks", value: "56", change: "-3% from last month", icon: "✅" },
-    { name: "Projects", value: "24", change: "+5% from last month", icon: "📁" }
+  const [tabs, setTabs] = useState([
+    { id: 1, title: 'Overview', content: 'Welcome to your dashboard overview' },
+    { id: 2, title: 'Analytics', content: 'Detailed analytics and metrics' }
   ]);
+  
+  const [activeTab, setActiveTab] = useState(1);
+  const [newTabTitle, setNewTabTitle] = useState('');
+  const [isAddingTab, setIsAddingTab] = useState(false);
 
-  // Load data from MongoDB on component mount
-  useEffect(() => {
-    fetchTabsFromDB();
-  }, []);
-
-  // Fetch tabs from MongoDB via Cloudflare Worker
-  const fetchTabsFromDB = async () => {
-    try {
-      const response = await fetch('/api/tabs');
-      const data = await response.json();
-      setTabs(data.tabs || []);
-      
-      if (data.tabs && data.tabs.length > 0) {
-        setActiveTab(data.tabs[0].id);
-      }
-    } catch (error) {
-      console.error('Error fetching tabs:', error);
+  const addNewTab = () => {
+    if (newTabTitle.trim()) {
+      const newTab = {
+        id: Date.now(),
+        title: newTabTitle,
+        content: `Content for ${newTabTitle}`
+      };
+      setTabs([...tabs, newTab]);
+      setActiveTab(newTab.id);
+      setNewTabTitle('');
+      setIsAddingTab(false);
     }
   };
 
-  // Add new tab to MongoDB
-  const addNewTab = async () => {
-    if (!newTabTitle.trim()) return;
-
-    const newTab = {
-      id: Date.now().toString(),
-      title: newTabTitle,
-      content: `Content for ${newTabTitle}`
-    };
-
-    try {
-      const response = await fetch('/api/tabs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTab)
-      });
-
-      if (response.ok) {
-        const savedTab = await response.json();
-        setTabs([...tabs, savedTab]);
-        
-        if (tabs.length === 0) {
-          setActiveTab(savedTab.id);
-        }
-        
-        setNewTabTitle('');
-        setIsAddingTab(false);
-      }
-    } catch (error) {
-      console.error('Error adding tab:', error);
+  const removeTab = (tabId) => {
+    const updatedTabs = tabs.filter(tab => tab.id !== tabId);
+    setTabs(updatedTabs);
+    if (activeTab === tabId && updatedTabs.length > 0) {
+      setActiveTab(updatedTabs[updatedTabs.length - 1].id);
     }
   };
 
-  // Remove tab from MongoDB
-  const removeTab = async (tabId) => {
-    try {
-      await fetch(`/api/tabs/${tabId}`, { method: 'DELETE' });
-      const updatedTabs = tabs.filter(tab => tab.id !== tabId);
-      setTabs(updatedTabs);
-      
-      if (activeTab === tabId && updatedTabs.length > 0) {
-        setActiveTab(updatedTabs[0].id);
-      } else if (updatedTabs.length === 0) {
-        setActiveTab(null);
-      }
-    } catch (error) {
-      console.error('Error removing tab:', error);
-    }
-  };
+  const stats = [
+    { name: 'Total Views', value: '24.8k', change: '+12%', icon: '👁️' },
+    { name: 'Revenue', value: '$89.4k', change: '+8.2%', icon: '💰' },
+    { name: 'Conversions', value: '1.2k', change: '+4.1%', icon: '📈' },
+    { name: 'Engagement', value: '86%', change: '+2.3%', icon: '🎯' }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -282,5 +235,4 @@ const Dashboard = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Dashboard />);
+export default Dashboard;
